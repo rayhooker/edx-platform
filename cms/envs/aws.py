@@ -14,7 +14,6 @@ from logsettings import get_logger_config
 import os
 
 from path import path
-from dealer.git import git
 
 # SERVICE_VARIANT specifies name of the variant used, which decides what JSON
 # configuration files are read during startup.
@@ -94,7 +93,6 @@ if STATIC_URL_BASE:
     STATIC_URL = STATIC_URL_BASE.encode('ascii')
     if not STATIC_URL.endswith("/"):
         STATIC_URL += "/"
-    STATIC_URL += git.revision + "/"
 
 # GITHUB_REPO_ROOT is the base directory
 # for course data
@@ -105,7 +103,7 @@ GITHUB_REPO_ROOT = ENV_TOKENS.get('GITHUB_REPO_ROOT', GITHUB_REPO_ROOT)
 
 STATIC_ROOT_BASE = ENV_TOKENS.get('STATIC_ROOT_BASE', None)
 if STATIC_ROOT_BASE:
-    STATIC_ROOT = path(STATIC_ROOT_BASE) / git.revision
+    STATIC_ROOT = path(STATIC_ROOT_BASE)
 
 EMAIL_BACKEND = ENV_TOKENS.get('EMAIL_BACKEND', EMAIL_BACKEND)
 EMAIL_FILE_PATH = ENV_TOKENS.get('EMAIL_FILE_PATH', None)
