@@ -148,12 +148,12 @@ class Order(models.Model):
         self.bill_to_state = state
         self.bill_to_country = country
         self.bill_to_postalcode = postalcode
+        self.processor_reply_dump = processor_reply_dump
         if settings.FEATURES['STORE_BILLING_INFO']:
             self.bill_to_street1 = street1
             self.bill_to_street2 = street2
             self.bill_to_ccnum = ccnum
             self.bill_to_cardtype = cardtype
-            self.processor_reply_dump = processor_reply_dump
 
         # save these changes on the order, then we can tell when we are in an
         # inconsistent state

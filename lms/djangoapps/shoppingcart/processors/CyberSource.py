@@ -98,7 +98,7 @@ def verify_signatures(params, signed_fields_key='signedFields', full_sig_key='si
         raise CCProcessorSignatureException()
 
 
-def render_purchase_form_html(cart):
+def render_purchase_form_html(cart, user, cart_items):
     """
     Renders the HTML of the hidden POST form that must be used to initiate a purchase with CyberSource
     """

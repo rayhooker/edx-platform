@@ -62,10 +62,11 @@ def add_course_to_cart(request, course_id):
 
 @login_required
 def show_cart(request):
-    cart = Order.get_cart_for_user(request.user)
+    user = request.user
+    cart = Order.get_cart_for_user(user)
     total_cost = cart.total_cost
     cart_items = cart.orderitem_set.all()
-    form_html = render_purchase_form_html(cart)
+    form_html = render_purchase_form_html(cart, user, cart_items)
     return render_to_response("shoppingcart/list.html",
                               {'shoppingcart_items': cart_items,
                                'amount': total_cost,
@@ -93,7 +94,6 @@ def remove_item(request):
 
 
 @csrf_exempt
-@require_POST
 def postpay_callback(request):
     """
     Receives the POST-back from processor.
@@ -104,7 +104,10 @@ def postpay_callback(request):
     If unsuccessful the order will be left untouched and HTML messages giving more detailed error info will be
     returned.
     """
-    params = request.POST.dict()
+    if request.method == "GET" and request.GET:
+        params = request.GET.dict()
+    if request.method == "POST" and request.POST:
+        params = request.POST.dict()
     result = process_postpay_callback(params)
     if result['success']:
         return HttpResponseRedirect(reverse('shoppingcart.views.show_receipt', args=[result['order'].id]))
@@ -134,6 +137,7 @@ def show_receipt(request, ordernum):
     # there is only one item in the order
     context = {
         'order': order,
+        'user': request.user,
         'order_items': order_items,
         'any_refunds': any_refunds,
         'instructions': instructions,
