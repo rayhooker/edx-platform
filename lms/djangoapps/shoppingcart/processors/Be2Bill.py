@@ -115,16 +115,15 @@ def record_purchase(params, order):
 
 
 def format_error_to_html(message):
-    payment_support_email = settings.CC_PROCESSOR['Be2Bill'].get('SUPPORT_EMAIL', '')
     msg = dedent(
             """
             <p class=error-msg">
             Nous sommes désolé mais une erreur est survenue. <span class="exception-msg">{msg}</span>
             <br />
             Si vous avez des questions ou des réclamations à faire concernant un paiement, contactez-nous
-            à l'adresse suivante <a href="maito:{mail}">{mail}</a>
+            <a href="https://courses.ionis-group.com/contact">ici</a>
             </p>
-            """.format(msg=message, mail=payment_support_email))
+            """.format(msg=message))
     return msg
 
 
