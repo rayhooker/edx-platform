@@ -11,6 +11,7 @@ if settings.FEATURES['ENABLE_SHOPPING_CART']:
     urlpatterns += patterns(
         'shoppingcart.views',
         url(r'^$', 'show_cart'),
+        url(r'^payment', 'payment'),
         url(r'^clear/$', 'clear_cart'),
         url(r'^remove_item/$', 'remove_item'),
         url(r'^add/course/(?P<course_id>[^/]+/[^/]+/[^/]+)/$', 'add_course_to_cart', name='add_course_to_cart'),

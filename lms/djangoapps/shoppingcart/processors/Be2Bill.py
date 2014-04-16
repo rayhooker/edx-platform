@@ -118,10 +118,11 @@ def format_error_to_html(message):
     payment_support_email = settings.CC_PROCESSOR['Be2Bill'].get('SUPPORT_EMAIL', '')
     msg = dedent(
             """
-            <p class=error_msg">
-            <span class="exception_msg">Nous sommes désolé mais une erreur est survenue. {msg}</span>
+            <p class=error-msg">
+            Nous sommes désolé mais une erreur est survenue. <span class="exception-msg">{msg}</span>
+            <br />
             Si vous avez des questions ou des réclamations à faire concernant un paiement, contactez-nous
-            à l'adresse suivante {mail}
+            à l'adresse suivante <a href="maito:{mail}">{mail}</a>
             </p>
             """.format(msg=message, mail=payment_support_email))
     return msg

@@ -231,3 +231,6 @@ def csv_report(request):
 
     else:
         return HttpResponseBadRequest("HTTP Method Not Supported")
+
+def payment(request):
+    return render_to_response('shoppingcart/payment.html', '')
