@@ -53,7 +53,7 @@ def get_purchase_params(cart, user, cart_items):
     params['AMOUNT'] = amount
     params['CLIENTIDENT'] = user.id
     params['DESCRIPTION'] =  u','.join([item.line_desc for item in cart_items])
-    params['IDENTIFIER'] = 'IONISGROUP'
+    params['IDENTIFIER'] = settings.CC_PROCESSOR['Be2Bill'].get('IDENTIFIER', '')
     params['OPERATIONTYPE'] = 'payment'
     params['ORDERID'] = '{cartid}-{timestamp}'.format(cartid=cart.id, timestamp=unicode(time.time()).split('.')[0])
     params['VERSION'] = '2.0'
