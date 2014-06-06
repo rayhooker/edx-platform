@@ -59,8 +59,8 @@ See http://psa.matiasaguirre.net/docs/pipeline.html for more docs.
 
 import random
 import string  # pylint: disable-msg=deprecated-module
-import logging
 import uuid
+import logging
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -75,6 +75,7 @@ from student.models import (
 
 from . import provider
 
+log = logging.getLogger("third_party_auth.pipeline")
 
 AUTH_ENTRY_KEY = 'auth_entry'
 AUTH_ENTRY_DASHBOARD = 'dashboard'
@@ -88,7 +89,6 @@ _AUTH_ENTRY_CHOICES = frozenset([
 _DEFAULT_RANDOM_PASSWORD_LENGTH = 12
 _PASSWORD_CHARSET = string.letters + string.digits
 
-logger = logging.getLogger()
 
 class AuthEntryError(AuthException):
     """Raised when auth_entry is missing or invalid on URLs.
@@ -341,7 +341,6 @@ def parse_query_params(strategy, response, *args, **kwargs):
 
 def create_user_from_oauth(strategy, details, response, uid, is_dashboard=None, is_login=None, is_register=None, user=None, *args, **kwargs):
     if 'is_new' in kwargs and kwargs['is_new'] is True:
-        logger.warning('New user !')
         user = User.objects.get(username=details['username'])
         registration = Registration()
         registration.register(user)
@@ -357,5 +356,3 @@ def create_user_from_oauth(strategy, details, response, uid, is_dashboard=None, 
         registration.activate()
         registration.save()
         create_comments_service_user(user)
-    else:
-        logger.warning('User exists !')
