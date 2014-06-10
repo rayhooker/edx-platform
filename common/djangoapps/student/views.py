@@ -680,6 +680,12 @@ def _get_course_enrollment_domain(course_id):
 
 @never_cache
 @ensure_csrf_cookie
+def auth_with_no_login(request):
+    return redirect("/auth/login/portal-oauth2/?auth_entry=login")
+
+
+@never_cache
+@ensure_csrf_cookie
 def accounts_login(request):
     """
     This view is mainly used as the redirect from the @login_required decorator.  I don't believe that
