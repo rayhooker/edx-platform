@@ -8,6 +8,7 @@ import uuid
 import time
 from collections import defaultdict
 from pytz import UTC
+from requests import request, ConnectionError
 
 from django.conf import settings
 from django.contrib.auth import logout, authenticate, login
@@ -85,6 +86,7 @@ from util.password_policy_validators import (
 )
 
 from third_party_auth import pipeline, provider
+from social.apps.django_app.default import models
 from xmodule.error_module import ErrorDescriptor
 
 log = logging.getLogger("edx.student")
@@ -905,6 +907,15 @@ def login_user(request, error=""):  # pylint: disable-msg=too-many-statements,un
     })  # TODO: this should be status code 400  # pylint: disable=fixme
 
 
+def logout_portal(user_mail):
+    try:
+        user = models.DjangoStorage.user.objects.get(uid=user_mail)
+        response = request('POST', 'http://192.168.33.1:7001/api/user/disconnect',
+            params={ 'access_token': user.extra_data['access_token'] })
+    except ConnectionError as err:
+        log.warning('error')
+        raise AuthFailed(self, str(err))
+
 @ensure_csrf_cookie
 def logout_user(request):
     """
@@ -914,6 +925,7 @@ def logout_user(request):
     """
     # We do not log here, because we have a handler registered
     # to perform logging on successful logouts.
+    user_mail = request.user.email
     logout(request)
     if settings.FEATURES.get('AUTH_USE_CAS'):
         target = reverse('cas-logout')
@@ -924,6 +936,7 @@ def logout_user(request):
         settings.EDXMKTG_COOKIE_NAME,
         path='/', domain=settings.SESSION_COOKIE_DOMAIN,
     )
+    logout_portal(user_mail)
     return response
 
 
