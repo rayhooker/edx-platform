@@ -325,77 +325,82 @@ def signin_user(request):
     """
     This view will display the non-modal login form
     """
-    if (settings.FEATURES['AUTH_USE_CERTIFICATES'] and
-            external_auth.views.ssl_get_cert_from_request(request)):
-        # SSL login doesn't require a view, so redirect
-        # branding and allow that to process the login if it
-        # is enabled and the header is in the request.
-        return external_auth.views.redirect_with_get('root', request.GET)
-    if settings.FEATURES.get('AUTH_USE_CAS'):
-        # If CAS is enabled, redirect auth handling to there
-        return redirect(reverse('cas-login'))
-    if request.user.is_authenticated():
-        return redirect(reverse('dashboard'))
+    if not settings.FEATURES.get('ENABLE_THIRD_PARTY_AUTH'):
+        if (settings.FEATURES['AUTH_USE_CERTIFICATES'] and
+                external_auth.views.ssl_get_cert_from_request(request)):
+            # SSL login doesn't require a view, so redirect
+            # branding and allow that to process the login if it
+            # is enabled and the header is in the request.
+            return external_auth.views.redirect_with_get('root', request.GET)
+        if settings.FEATURES.get('AUTH_USE_CAS'):
+            # If CAS is enabled, redirect auth handling to there
+            return redirect(reverse('cas-login'))
+        if request.user.is_authenticated():
+            return redirect(reverse('dashboard'))
 
-    context = {
-        'course_id': request.GET.get('course_id'),
-        'enrollment_action': request.GET.get('enrollment_action'),
-        # Bool injected into JS to submit form if we're inside a running third-
-        # party auth pipeline; distinct from the actual instance of the running
-        # pipeline, if any.
-        'pipeline_running': 'true' if pipeline.running(request) else 'false',
-        'platform_name': microsite.get_value(
-            'platform_name',
-            settings.PLATFORM_NAME
-        ),
-    }
+        context = {
+            'course_id': request.GET.get('course_id'),
+            'enrollment_action': request.GET.get('enrollment_action'),
+            # Bool injected into JS to submit form if we're inside a running third-
+            # party auth pipeline; distinct from the actual instance of the running
+            # pipeline, if any.
+            'pipeline_running': 'true' if pipeline.running(request) else 'false',
+            'platform_name': microsite.get_value(
+                'platform_name',
+                settings.PLATFORM_NAME
+            ),
+        }
 
-    return render_to_response('login.html', context)
-
+        return render_to_response('login.html', context)
+    else:
+        return redirect('http://localhost:7001/login')
 
 @ensure_csrf_cookie
 def register_user(request, extra_context=None):
     """
     This view will display the non-modal registration form
     """
-    if request.user.is_authenticated():
-        return redirect(reverse('dashboard'))
-    if settings.FEATURES.get('AUTH_USE_CERTIFICATES_IMMEDIATE_SIGNUP'):
-        # Redirect to branding to process their certificate if SSL is enabled
-        # and registration is disabled.
-        return external_auth.views.redirect_with_get('root', request.GET)
+    if not settings.FEATURES.get('ENABLE_THIRD_PARTY_AUTH'):
+        if request.user.is_authenticated():
+            return redirect(reverse('dashboard'))
+        if settings.FEATURES.get('AUTH_USE_CERTIFICATES_IMMEDIATE_SIGNUP'):
+            # Redirect to branding to process their certificate if SSL is enabled
+            # and registration is disabled.
+            return external_auth.views.redirect_with_get('root', request.GET)
 
-    context = {
-        'course_id': request.GET.get('course_id'),
-        'email': '',
-        'enrollment_action': request.GET.get('enrollment_action'),
-        'name': '',
-        'running_pipeline': None,
-        'platform_name': microsite.get_value(
-            'platform_name',
-            settings.PLATFORM_NAME
-        ),
-        'selected_provider': '',
-        'username': '',
-    }
+        context = {
+            'course_id': request.GET.get('course_id'),
+            'email': '',
+            'enrollment_action': request.GET.get('enrollment_action'),
+            'name': '',
+            'running_pipeline': None,
+            'platform_name': microsite.get_value(
+                'platform_name',
+                settings.PLATFORM_NAME
+            ),
+            'selected_provider': '',
+            'username': '',
+        }
 
-    if extra_context is not None:
-        context.update(extra_context)
+        if extra_context is not None:
+            context.update(extra_context)
 
-    if context.get("extauth_domain", '').startswith(external_auth.views.SHIBBOLETH_DOMAIN_PREFIX):
-        return render_to_response('register-shib.html', context)
+        if context.get("extauth_domain", '').startswith(external_auth.views.SHIBBOLETH_DOMAIN_PREFIX):
+            return render_to_response('register-shib.html', context)
 
-    # If third-party auth is enabled, prepopulate the form with data from the
-    # selected provider.
-    if settings.FEATURES.get('ENABLE_THIRD_PARTY_AUTH') and pipeline.running(request):
-        running_pipeline = pipeline.get(request)
-        current_provider = provider.Registry.get_by_backend_name(running_pipeline.get('backend'))
-        overrides = current_provider.get_register_form_data(running_pipeline.get('kwargs'))
-        overrides['running_pipeline'] = running_pipeline
-        overrides['selected_provider'] = current_provider.NAME
-        context.update(overrides)
+        # If third-party auth is enabled, prepopulate the form with data from the
+        # selected provider.
+        if settings.FEATURES.get('ENABLE_THIRD_PARTY_AUTH') and pipeline.running(request):
+            running_pipeline = pipeline.get(request)
+            current_provider = provider.Registry.get_by_backend_name(running_pipeline.get('backend'))
+            overrides = current_provider.get_register_form_data(running_pipeline.get('kwargs'))
+            overrides['running_pipeline'] = running_pipeline
+            overrides['selected_provider'] = current_provider.NAME
+            context.update(overrides)
 
-    return render_to_response('register.html', context)
+        return render_to_response('register.html', context)
+    else:
+        return redirect('http://localhost:7001/login')
 
 
 def complete_course_mode_info(course_id, enrollment):
