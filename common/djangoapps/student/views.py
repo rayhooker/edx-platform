@@ -914,7 +914,7 @@ def logout_portal(user_mail):
             params={ 'access_token': user.extra_data['access_token'] })
     except ConnectionError as err:
         log.warning('error')
-        raise AuthFailed(self, str(err))
+
 
 @ensure_csrf_cookie
 def logout_user(request):
@@ -925,7 +925,11 @@ def logout_user(request):
     """
     # We do not log here, because we have a handler registered
     # to perform logging on successful logouts.
-    user_mail = request.user.email
+    if isinstance(request.user, AnonymousUser):
+        user_mail = None
+    else:
+        user_mail = request.user.email
+
     logout(request)
     if settings.FEATURES.get('AUTH_USE_CAS'):
         target = reverse('cas-logout')
@@ -936,7 +940,8 @@ def logout_user(request):
         settings.EDXMKTG_COOKIE_NAME,
         path='/', domain=settings.SESSION_COOKIE_DOMAIN,
     )
-    logout_portal(user_mail)
+    if user_mail:
+        logout_portal(user_mail)
     return response
 
 
